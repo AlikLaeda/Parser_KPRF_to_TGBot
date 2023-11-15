@@ -1,3 +1,3 @@
-token = "6806376145:AAHhdC1aH2yI0ZvG-57FKBOv6YDolNR7VfY"
-kk_channel_id = -1002109854116
-bot_chat_id = 1163882111
+token = ""
+kk_channel_id = 
+bot_chat_id = 
