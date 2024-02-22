@@ -69,6 +69,10 @@ def str_to_time(time_str):
 # Ссылка на статью.
 # Ссылка на картинку.
 # Текст статьи.
+# Автор
+# Фотограф
+#
+
 def parse_regions_ru(sity):
     url = "https://regions.ru/"+sity+"/news"
     response = requests.get(url)
@@ -78,7 +82,19 @@ def parse_regions_ru(sity):
     soup.find('div', class_='zone-left').decompose()
     articles = soup.find_all("div", class_="story article")
     for art in articles:
-        pass
+        a_date = str_to_time(art.find("div", class_="update").name)
+        a_head = art.a(class_="headline").name
+        a_cat = art.find("a", class_="category").name
+        a_link = 'https://regions.ru' + art.find("a", class_="headline").get("href")
+        response_i = requests.get(a_link)
+        soup_i = BeautifulSoup(response.text, 'lxml')
+        a_img = art.find("figure").find("img").get("src")
+        a_text = art.find("div", class_="short-desc").get_text()
+        a_text = a_text + art.find("div",
+                        class_="article news-content news-article").get_text()
+        a_author = art.find("div", class_="author").name[8:]
+        a_author_foto = art.find("figure").find("figcaption").name[6:]
+        
 
 
 
