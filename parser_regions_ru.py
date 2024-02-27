@@ -64,8 +64,7 @@ def str_to_time(time_str):
     return date
 #    
 
-# 86400 день
-# год
+
 # Основная функция модуля принимает string название города 
 # латиницей, из адресной строки сайта. На выходе - dict 
 # новостей с ключами из уникальных индетификаторов сайта
@@ -81,16 +80,24 @@ def str_to_time(time_str):
 #
 
 def parse_regions_ru(sity):
+    # В articles_regions_ru.json сохранены все имеющиеся новости за последнее время 
+    # забираем оттуда всю инфу в список.
     try:
         with open("articles_regions_ru.json", "r", encoding="utf-8") as f:
             dict_of_articles = json.load(f)
+    # или создаём такой список, если файла нет. 
     except FileNotFoundError:
         dict_of_articles = {}
+
+    # Делаем запрос к сайту и варим из ответа суп.
     url = "https://regions.ru/"+sity+"/news"
     response = requests.get(url)
-    print(response.status_code)
+#    print(response.status_code)
     soup = BeautifulSoup(response.text, 'lxml')
+    # Находим удаляем тэг, внутри которого тэги и классы 
+    # с именами такими же как искомые    
     soup.find('div', class_='zone-left').decompose()
+    # Находим все статьи на странице
     articles = soup.find_all("div", class_="story article")
     for art in articles:
         a_date = str_to_time(art.find("div", class_="update").string)
@@ -107,11 +114,11 @@ def parse_regions_ru(sity):
         a_text = a_text + soup_i.find("div",
                         class_="article news-content news-article").get_text()
         try:
-            a_author = soup_i.find("div", class_="author").string[8:]
+            a_author = soup_i.find("div", class_="author").string.replace('Автор:', '', 1).strip()
         except:
             a_author = ''
         try:
-            a_author_foto = soup_i.find("figure").find("figcaption").string[6:]
+            a_author_foto = soup_i.find("figcaption").string.replace('Фото:', '', 1).strip()
         except:
             a_author_foto = ''
         a_dict = {
@@ -125,7 +132,9 @@ def parse_regions_ru(sity):
             'author photo' : a_author_foto}
         a_name = a_link.split('/')[-1]
         dict_of_articles.update({a_name : a_dict})
-
+# Сохраняем словарь всех новостей обратно в файл                
+    with open("articles_regions_ru.json", "w", encoding="utf-8") as file:
+        json.dump(dict_of_articles, file, indent=4, ensure_ascii=False) 
         
         
 
