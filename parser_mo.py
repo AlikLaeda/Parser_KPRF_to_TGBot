@@ -3,8 +3,10 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import time
+import io
 
-from cleaner import news_remover
+#from cleaner import news_remover
 
 # список слов, если статья не содержит, хотя бы одного из них,
 # то она не пройдёт дальше в результат поиска. В список старых 
@@ -88,11 +90,11 @@ def search_lub_mo(url_st):
 
 def update_news_mo():
 # В news_dict.json сохранены все имеющиеся новости за последнее время
-    with open("news_dict.json") as file:
+    with io.open("news_dict.json", encoding='utf-8') as file:
         news_dict = json.load(file)
 
 # Удаляем старые новости
-    news_remover(news_dict=news_dict)
+#    news_remover(news_dict=news_dict)
 
 # Словарь только для новых новостей 
     fresh_dict = {}
@@ -124,11 +126,11 @@ def update_news_mo():
         else:
 
 # Достаём из карточки заголовок новости дату и ссылку на картинку            
-            article_title = article.find("a").text
-            article_date = article.find("span", class_="arg idate").text
+            article_title = article.find("span", class_="arg idate").text + ' ' + article.find("a").text
+            article_date = time.time()
             article_image = article.find("img").get("src")[2:-2]
 
-# У краткого содержания нет спечального тэга, очищаем карточку 
+# У краткого содержания нет специального тэга, очищаем карточку 
 # от лишних тэгов, чтобы добраться до текста
             article.h3.decompose()
             article.p.decompose()
@@ -157,7 +159,7 @@ def update_news_mo():
                 }
 
 # Сохраняем словарь всех новостей обратно в файл                
-    with open("news_dict.json", "w") as file:
+    with io.open("news_dict.json", "w", encoding='utf-8') as file:
         json.dump(news_dict, file, indent=4, ensure_ascii=False)    
 
 # Возвращаем словарь свежих новостей

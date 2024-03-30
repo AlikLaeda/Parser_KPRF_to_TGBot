@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import time
+import io
 
 # список слов, если статья не содержит, хотя бы одного из них,
 # то она не пройдёт дальше в результат поиска. В список старых 
@@ -49,16 +50,20 @@ def search_lub_ck(url_st):
 # парсинг новых новостей с КПРФ kprf.ru
 def update_news_ck():
 # В news_dict.json сохранены все имеющиеся новости за последнее время
-    with open("news_dict.json") as file:
+    with io.open("news_dict.json", encoding='utf-8') as file:
         news_dict = json.load(file)
     
 # Удаляем из словаря новости старше 30 дней (примерно, без учёта часовых поясов)
+    Older_news = []
     for One_news in news_dict:
-        if time.time() - time.mktime(time.strptime(One_news["article_date"], '%d.%m.%Y')) > 2592000:
-            news_dict.p
-
-
-
+#        if time.time() - time.mktime(time.strptime(One_news["article_date"], '%d.%m.%Y')) > 2592000:
+        if time.time() - news_dict[One_news]["article_date"] > 2592000:
+# Из словаря нельзя удалять записи, пока он в for'е, а то наступит неожиданный конец.
+# Сохраняем удаляемые новасти в специальный список.
+            Older_news.append(One_news)
+# И только теперь удаляем.
+    for One_news in Older_news:
+        news_dict.pop(One_news)
 
 # Словарь только для новых новостей 
     fresh_dict = {}
@@ -77,7 +82,7 @@ def update_news_ck():
     try:
         announces_cards = soup.find("div", id="announcement").find_all("a")
     except Exception: 
-        print("no announces")
+        print(time.ctime(time.time()) + " - no announces")
 
 
     for announce in announces_cards:
@@ -89,8 +94,8 @@ def update_news_ck():
         if announce_id in news_dict:
             continue
         else:
-            announce_title = announce.text
-            announce_date = "Анонс: " + announce.previous_sibling.previous_sibling.previous_sibling.previous_sibling.text
+            announce_title = "Анонс: " + announce.previous_sibling.previous_sibling.previous_sibling.previous_sibling.text
+            announce_date = time.time()
             announce_desc = announce.text
             announce_image = ""
 # Добавляем анонс в словарь, чтобы в следующий раз его не обрабатывать                
@@ -134,7 +139,7 @@ def update_news_ck():
 
 # Достаём из карточки заголовок новости, дату и ссылку на картинку
             article_title = article.text.strip()
-            article_date = ""
+            article_date = time.time()
             article_image = url[:-1] + article.find("a").get("style").split("(")[1].split(")")[0]
             article_desc = article_title
 
@@ -150,7 +155,7 @@ def update_news_ck():
 # Вызываем функцию поиска ключевых слов внутри статьи
             if search_lub_ck(article_link):
 
-# Записываем в словарь свежих новостей только те, что содержать хоть 1 слово
+# Записываем в словарь свежих новостей только те, что содержат хоть 1 слово
                 fresh_dict[article_id] = {
                     "article_date": article_date,
                     "article_title": article_title,
@@ -161,7 +166,7 @@ def update_news_ck():
                 
 
 # Сохраняем словарь всех новостей обратно в файл                
-    with open("news_dict.json", "w") as file:
+    with io.open("news_dict.json", "w", encoding='utf-8') as file:
         json.dump(news_dict, file, indent=4, ensure_ascii=False)    
 
 # Возвращаем словарь свежих новостей

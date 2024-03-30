@@ -41,16 +41,14 @@ async def start_answer(message):
 async def start_updates_mo():
    fresh_news = update_news_mo()
    for one_news in fresh_news.values():
-       news = f"{one_news['article_date']}\n" \
-              f"{one_news['article_title']}\n" \
+       news = f"{one_news['article_title']}\n" \
               f"{one_news['article_link']}\n" 
        await bot.send_message(chat_id=bot_chat_id, text=news, reply_markup=get_inline_keys())
 
 async def start_updates_ck():
    fresh_news = update_news_ck()
    for one_news in fresh_news.values():
-       news = f"{one_news['article_date']}\n" \
-              f"{one_news['article_title']}\n" \
+       news = f"{one_news['article_title']}\n" \
               f"{one_news['article_link']}\n" 
        await bot.send_message(chat_id=bot_chat_id, text=news, reply_markup=get_inline_keys())
 
@@ -90,8 +88,8 @@ async def job(message='stuff', n=1):
 
 
 async def scheduler():
-    schedule.every().hours.at('00:31').do(start_updates_mo)
-    schedule.every().hours.at('00:36').do(start_updates_ck)
+    schedule.every().hours.at('00:32').do(start_updates_mo)
+    schedule.every().hours.at('00:37').do(start_updates_ck)
     while True:
         await schedule.run_pending()
         await asyncio.sleep(0.5)
